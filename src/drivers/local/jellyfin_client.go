@@ -58,7 +58,7 @@ func (j *JellyfinClient) GetMediaStreamUrl(path string) string {
 		return dstUrl
 	}
 
-	dstUrl = fmt.Sprintf("%v/Videos/%v/stream.flv", j.getApiHost(), dstId)
+	dstUrl = fmt.Sprintf("%v/Videos/%v/stream.mp4", j.getApiHost(), dstId)
 
 	return dstUrl
 
@@ -130,22 +130,22 @@ func (j *JellyfinClient) GetItemId(path string) string {
 		var curPathName string
 		curPathName = srcPathList[srcPathListSize-1-i]
 
-		log.Infof("curPathName=[%v]", curPathName)
+		//log.Infof("curPathName=[%v]", curPathName)
 
 		var curItemId string
 
 		for _, item := range xApiResp.Items {
 
-			itemName := item.Name
+			itemName := curPathName
 
 			if !item.IsFolder {
-				ext := filepath.Ext(item.Name)
+				ext := filepath.Ext(curPathName)
 				if len(ext) > 0 {
-					itemName = itemName[:len(item.Name)-len(ext)]
+					itemName = curPathName[:len(curPathName)-len(ext)]
 				}
 			}
 
-			if strings.EqualFold(curPathName, itemName) {
+			if strings.EqualFold(item.Name, itemName) {
 
 				if !item.IsFolder {
 					dstId = item.Id
@@ -156,7 +156,7 @@ func (j *JellyfinClient) GetItemId(path string) string {
 			}
 		}
 
-		log.Infof("curItemId=[%v]", curItemId)
+		//log.Infof("curItemId=[%v]", curItemId)
 
 		if len(curItemId) < 1 {
 			break

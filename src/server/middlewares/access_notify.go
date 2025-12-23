@@ -55,11 +55,16 @@ func (this *NotifyRobot) getWebHookUrlForFeishu() string {
 
 }
 
-func (this *NotifyRobot) doSend(ctx *gin.Context) error {
+func (this *NotifyRobot) sendNotifyFeishu(ctx *gin.Context) error {
 
 	var xErr error
 
 	xWebHookUrl := this.getWebHookUrlForFeishu()
+	if len(xWebHookUrl) < 1 {
+		return xErr
+	}
+
+	log.Infof("设置了飞书Webhook回调=[%v]", xWebHookUrl)
 
 	xNowTime := time.Now().Format("2006-01-02 15:04:05")
 
@@ -68,7 +73,7 @@ func (this *NotifyRobot) doSend(ctx *gin.Context) error {
 	xJsonData := `{
 		"msg_type": "text",
 		"content": {
-			"text": "【通知】[` + xNowTime + `][` + xClientAddr + `]触发了[OpenList]访问<at user_id="all">所有人</at>"
+			"text": "【通知】[` + xNowTime + `][` + xClientAddr + `]触发了[OpenList]访问"
 		}
 	}`
 
@@ -98,10 +103,6 @@ func (this *NotifyRobot) Notify(ctx *gin.Context) error {
 
 	var xErr error
 
-	if len(this.getWebHookUrlForFeishu()) < 1 {
-		return xErr
-	}
-
 	xClientAddr := ctx.ClientIP()
 	var xClientLastTime int64 = 0
 
@@ -120,7 +121,7 @@ func (this *NotifyRobot) Notify(ctx *gin.Context) error {
 		return xErr
 	}
 
-	this.doSend(ctx)
+	this.sendNotifyFeishu(ctx)
 
 	return xErr
 
