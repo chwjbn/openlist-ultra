@@ -1,11 +1,10 @@
 package middlewares
 
 import (
-	"bytes"
+	"fmt"
+	"github.com/OpenListTeam/OpenList/v4/pkg/webhook"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"os"
 	"sync"
 	"time"
 )
@@ -45,85 +44,44 @@ func (this *NotifyRobot) getClientAddr(ctx *gin.Context) string {
 
 }
 
-func (this *NotifyRobot) getWebHookUrlForFeishu() string {
-
-	var dstUrl string
-
-	dstUrl = os.Getenv("NOTIFY_WEBHOOK_FEISHU")
-
-	return dstUrl
-
-}
-
-func (this *NotifyRobot) sendNotifyFeishu(ctx *gin.Context) error {
-
-	var xErr error
-
-	xWebHookUrl := this.getWebHookUrlForFeishu()
-	if len(xWebHookUrl) < 1 {
-		return xErr
-	}
-
-	log.Infof("设置了飞书Webhook回调=[%v]", xWebHookUrl)
-
-	xNowTime := time.Now().Format("2006-01-02 15:04:05")
-
-	xClientAddr := this.getClientAddr(ctx)
-
-	xJsonData := `{
-		"msg_type": "text",
-		"content": {
-			"text": "【通知】[` + xNowTime + `][` + xClientAddr + `]触发了[OpenList]访问"
-		}
-	}`
-
-	xHttpReq, xHttpErr := http.NewRequest("POST", xWebHookUrl, bytes.NewBuffer([]byte(xJsonData)))
-
-	if xHttpErr != nil {
-		return xErr
-	}
-
-	xHttpReq.Header.Set("Content-Type", "application/json")
-	xHttpReq.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36")
-
-	xHttpClient := &http.Client{}
-
-	xHttpResp, xHttpErr := xHttpClient.Do(xHttpReq)
-	if xHttpErr != nil {
-		return xErr
-	}
-
-	defer xHttpResp.Body.Close()
-
-	return xErr
-
-}
-
 func (this *NotifyRobot) Notify(ctx *gin.Context) error {
 
-	var xErr error
+	var dstErr error
 
-	xClientAddr := ctx.ClientIP()
-	var xClientLastTime int64 = 0
-
-	xLastTimeVal, xIsLoad := this.mLastSendTimeTable.Load(xClientAddr)
-	if xIsLoad {
-		xClientLastTime = xLastTimeVal.(int64)
+	if !webhook.WebHookIsSet() {
+		return dstErr
 	}
 
-	xTimeDiff := time.Now().UnixMilli() - xClientLastTime
+	clientIP := ctx.ClientIP()
 
-	log.Infof("NotifyRobot xClientAddr=[%v] xClientLastTime=[%v] xTimeDiff=[%v]", xClientAddr, xClientLastTime, xTimeDiff/1000)
+	var clientLastTime int64 = 0
 
-	this.mLastSendTimeTable.Store(xClientAddr, time.Now().UnixMilli())
-
-	if xTimeDiff < 5*60*1000 {
-		return xErr
+	lastTimeValue, lastTimeOk := this.mLastSendTimeTable.Load(clientIP)
+	if lastTimeOk {
+		clientLastTime = lastTimeValue.(int64)
 	}
 
-	this.sendNotifyFeishu(ctx)
+	lastTimeDiff := time.Now().UnixMilli() - clientLastTime
 
-	return xErr
+	log.Infof("[NotifyRobot]clientIP=[%v] clientLastTime=[%v] lastTimeDiff=[%v]", clientIP, clientLastTime, lastTimeDiff/1000)
+
+	this.mLastSendTimeTable.Store(clientIP, time.Now().UnixMilli())
+
+	if lastTimeDiff < 5*60*1000 {
+		return dstErr
+	}
+
+	msgTime := time.Now().Format("2006-01-02 15:04:05")
+
+	msgData2Feishu := fmt.Sprintf("【通知】[%v]IP地址=[%v]触发了[OpenList]访问", msgTime, clientIP)
+
+	dstErr = webhook.WebHookToFeishu(msgData2Feishu)
+
+	if dstErr != nil {
+		log.Errorf("[NotifyRobot]%v", dstErr.Error())
+	}
+
+	return dstErr
 
 }
 
@@ -132,9 +90,6 @@ var (
 )
 
 func AccessNotify(c *gin.Context) {
-
 	gNotifyRobot.Notify(c)
-
 	c.Next()
-
 }
