@@ -19,11 +19,34 @@ func NewClient() *JellyfinClient {
 	return &JellyfinClient{}
 }
 
+func (j *JellyfinClient) GetApiHost() string {
+
+	var dstUrl string
+	dstUrl = os.Getenv("JELLYFIN_API_HOST")
+	return dstUrl
+
+}
+
+func (j *JellyfinClient) GetApiKey() string {
+
+	var dstKey string
+	dstKey = os.Getenv("JELLYFIN_API_KEY")
+	return dstKey
+
+}
+
+func (j *JellyfinClient) GetApiRootFolder() string {
+
+	var dstData string
+	dstData = os.Getenv("JELLYFIN_API_ROOT_FOLDER")
+	return dstData
+}
+
 func (j *JellyfinClient) IsHosted() bool {
 
-	log.Infof("ApiHost=[%v]", j.getApiHost())
+	log.Infof("ApiHost=[%v]", j.GetApiHost())
 
-	return len(j.getApiHost()) > 0 && len(j.getApiKey()) > 0 && len(j.getApiRootFolder()) > 0
+	return len(j.GetApiHost()) > 0 && len(j.GetApiKey()) > 0 && len(j.GetApiRootFolder()) > 0
 
 }
 
@@ -45,7 +68,7 @@ func (j *JellyfinClient) GetMediaStreamUrl(path string) string {
 		return dstUrl
 	}
 
-	dstUrl = fmt.Sprintf("%v/Videos/%v/stream.flv?static=true", j.getApiHost(), dstId)
+	dstUrl = fmt.Sprintf("%v/Videos/%v/stream.flv?static=true", j.GetApiHost(), dstId)
 
 	return dstUrl
 
@@ -86,7 +109,7 @@ func (j *JellyfinClient) GetItemId(path string) string {
 		return dstId
 	}
 
-	srcPathList = append(srcPathList, j.getApiRootFolder())
+	srcPathList = append(srcPathList, j.GetApiRootFolder())
 
 	log.Infof("GetItemId srcPathList=[%v]", strings.Join(srcPathList, "|"))
 
@@ -167,7 +190,7 @@ func (j *JellyfinClient) doGet(pathUrl string) string {
 	var xErr error
 	var xApiUrl string
 
-	xApiUrl = fmt.Sprintf("%v%v", j.getApiHost(), pathUrl)
+	xApiUrl = fmt.Sprintf("%v%v", j.GetApiHost(), pathUrl)
 
 	xClient := j.getHttpClient()
 
@@ -177,7 +200,7 @@ func (j *JellyfinClient) doGet(pathUrl string) string {
 	}
 
 	xReq.Header.Set("User-Agent", "Mozilla/5.5 Openlist HttpClient")
-	xReq.Header.Set("Authorization", fmt.Sprintf("MediaBrowser Token=\"%v\"", j.getApiKey()))
+	xReq.Header.Set("Authorization", fmt.Sprintf("MediaBrowser Token=\"%v\"", j.GetApiKey()))
 
 	xResp, xErr := xClient.Do(xReq)
 	if xErr != nil {
@@ -201,33 +224,4 @@ func (j *JellyfinClient) getHttpClient() *http.Client {
 	xClient.Timeout = 60 * time.Second
 
 	return xClient
-}
-
-func (j *JellyfinClient) getApiHost() string {
-
-	var dstUrl string
-
-	dstUrl = os.Getenv("JELLYFIN_API_HOST")
-
-	return dstUrl
-
-}
-
-func (j *JellyfinClient) getApiKey() string {
-
-	var dstKey string
-
-	dstKey = os.Getenv("JELLYFIN_API_KEY")
-
-	return dstKey
-
-}
-
-func (j *JellyfinClient) getApiRootFolder() string {
-
-	var dstData string
-
-	dstData = os.Getenv("JELLYFIN_API_ROOT_FOLDER")
-
-	return dstData
 }
