@@ -1,7 +1,6 @@
-package local
+package jellyfin
 
 import (
-	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"io"
@@ -12,24 +11,11 @@ import (
 	"time"
 )
 
-type JellyfinDataItem struct {
-	Name         string
-	ServerId     string
-	Id           string
-	ChannelId    string
-	IsFolder     bool
-	Type         string
-	LocationType string
-	MediaType    string
-}
-
-type JellyfinRespItems struct {
-	Items            []JellyfinDataItem
-	TotalRecordCount int
-	StartIndex       int
-}
-
 type JellyfinClient struct {
+}
+
+func NewClient() *JellyfinClient {
+	return &JellyfinClient{}
 }
 
 func (j *JellyfinClient) IsHosted() bool {

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/OpenListTeam/OpenList/v4/pkg/jellyfin"
 	"io/fs"
 	"net/http"
 	"os"
@@ -229,9 +230,9 @@ func (d *Local) Get(ctx context.Context, path string) (model.Obj, error) {
 	if !isFolder {
 		fType := utils.GetFileType(f.Name())
 		if fType == conf.VIDEO {
-			var xJellyfinClient JellyfinClient
-			if xJellyfinClient.IsHosted() {
-				xId = xJellyfinClient.GetMediaStreamUrl(rawPath)
+			jellyfinClient := jellyfin.NewClient()
+			if jellyfinClient.IsHosted() {
+				xId = jellyfinClient.GetMediaStreamUrl(rawPath)
 			}
 		}
 	}
