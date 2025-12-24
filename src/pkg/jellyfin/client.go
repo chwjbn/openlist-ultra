@@ -68,7 +68,7 @@ func (j *JellyfinClient) GetMediaStreamUrl(path string) string {
 		return dstUrl
 	}
 
-	dstUrl = fmt.Sprintf("%v/Videos/%v/stream.flv?static=true", j.GetApiHost(), dstId)
+	dstUrl = fmt.Sprintf("/px/jellyfin/Videos/%v/main.m3u8?VideoCodec=h264&AudioCodec=aac&AudioStreamIndex=1&AudioSampleRate=48000&MaxFramerate=60&SegmentContainer=mp4&MinSegments=1&BreakOnNonKeyFrames=False", dstId)
 
 	return dstUrl
 
