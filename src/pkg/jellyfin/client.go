@@ -83,44 +83,15 @@ func (j *JellyfinClient) GetItemId(path string) string {
 		return dstId
 	}
 
-	var srcPathList []string
-	for {
+	srcFullPath := filepath.Clean(filepath.Join("/", j.GetApiRootFolder(), srcPath))
 
-		basePath := filepath.Base(srcPath)
-		dirPath := filepath.Dir(srcPath)
-
-		if len(basePath) < 1 {
-			break
-		}
-
-		if strings.EqualFold(basePath, dirPath) {
-			break
-		}
-
-		srcPathList = append(srcPathList, basePath)
-
-		srcPath = filepath.Clean(dirPath)
-		if len(srcPath) < 1 {
-			break
-		}
-	}
-
-	if len(srcPathList) < 1 {
-		return dstId
-	}
-
-	srcPathList = append(srcPathList, j.GetApiRootFolder())
-
-	log.Infof("GetItemId srcPathList=[%v]", strings.Join(srcPathList, "|"))
+	log.Infof("GetItemId srcFullPath=[%v]", srcFullPath)
 
 	var parentId string
 
-	var srcPathListSize int
-	srcPathListSize = len(srcPathList)
+	for {
 
-	for i := 0; i < srcPathListSize; i++ {
-
-		xApiPathUrl := "/Items?parentId=" + parentId
+		xApiPathUrl := "/Items?locationTypes=FileSystem&fields=Path&parentId=" + parentId
 		xApiData := j.doGet(xApiPathUrl)
 
 		if len(xApiData) < 1 {
@@ -137,25 +108,11 @@ func (j *JellyfinClient) GetItemId(path string) string {
 			break
 		}
 
-		var curPathName string
-		curPathName = srcPathList[srcPathListSize-1-i]
-
-		//log.Infof("curPathName=[%v]", curPathName)
-
 		var curItemId string
 
 		for _, item := range xApiResp.Items {
 
-			itemName := curPathName
-
-			if !item.IsFolder {
-				ext := filepath.Ext(curPathName)
-				if len(ext) > 0 {
-					itemName = curPathName[:len(curPathName)-len(ext)]
-				}
-			}
-
-			if strings.EqualFold(item.Name, itemName) {
+			if strings.HasPrefix(srcFullPath, item.Path) {
 
 				if !item.IsFolder {
 					dstId = item.Id
@@ -166,12 +123,12 @@ func (j *JellyfinClient) GetItemId(path string) string {
 			}
 		}
 
-		//log.Infof("curItemId=[%v]", curItemId)
-
+		//没有匹配到
 		if len(curItemId) < 1 {
 			break
 		}
 
+		//匹配到了最终的
 		if len(dstId) > 0 {
 			break
 		}

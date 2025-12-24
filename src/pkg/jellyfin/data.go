@@ -2,6 +2,7 @@ package jellyfin
 
 type JellyfinDataItem struct {
 	Name         string
+	Path         string
 	ServerId     string
 	Id           string
 	ChannelId    string
