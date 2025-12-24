@@ -13,7 +13,7 @@ services:
       - NOTIFY_WEBHOOK_FEISHU=
       - JELLYFIN_API_HOST=http://192.168.1.100:8096
       - JELLYFIN_API_KEY=
-      - JELLYFIN_API_ROOT_FOLDER=mov
+      - JELLYFIN_API_ROOT_FOLDER=/mov
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"

@@ -83,7 +83,7 @@ func (j *JellyfinClient) GetItemId(path string) string {
 		return dstId
 	}
 
-	srcFullPath := filepath.Clean(filepath.Join("/", j.GetApiRootFolder(), srcPath))
+	srcFullPath := filepath.Clean(filepath.Join(j.GetApiRootFolder(), srcPath))
 
 	log.Infof("GetItemId srcFullPath=[%v]", srcFullPath)
 
