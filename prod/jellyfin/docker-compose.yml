@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+  app-jellyfin:
+    image: jellyfin/jellyfin:2025122205
+    hostname: app-jellyfin
+    container_name: app-jellyfin
+    restart: always
+    devices:
+      - /dev/dri:/dev/dri
+    ports:
+      - "8096:8096"
+    environment:
+      - TZ=Asia/Shanghai
+      - UID=0
+      - GID=0
+      - GIDLIST=0
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+      - "./config:/config"
+      - "./cache:/cache"
+      - "/mnt/mov:/mov:rw"
