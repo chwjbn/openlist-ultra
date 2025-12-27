@@ -27,18 +27,15 @@ func (h *TagLogHooker) Levels() []logrus.Level {
 }
 
 func (h *TagLogHooker) Fire(entry *logrus.Entry) error {
-	tag, ok := entry.Data["tag"].(string)
-	if !ok {
-		return nil
-	}
 
 	if h.Writer == nil {
 		return nil
 	}
 
+	line, _ := entry.String()
+
 	for _, k := range h.Tags {
-		if tag == k {
-			line, _ := entry.String()
+		if strings.Contains(line, fmt.Sprintf("[%v]", k)) {
 			_, err := h.Writer.Write([]byte(line))
 			return err
 		}
@@ -107,14 +104,18 @@ func Log() {
 			w = io.MultiWriter(os.Stdout, w)
 		}
 		logrus.SetOutput(w)
+
+		accessLogHooker := createTagLogHooker("ACCESS")
+		if accessLogHooker != nil {
+			logrus.AddHook(accessLogHooker)
+		}
+
+		logrus.Info("[ACCESS]access log init")
+
 	}
+
 	log.SetOutput(logrus.StandardLogger().Out)
 	utils.Log.Infof("init logrus...")
 	utils.Log = logrus.StandardLogger()
-
-	accessLogHooker := createTagLogHooker("ACCESS")
-	if accessLogHooker != nil {
-		utils.Log.AddHook(accessLogHooker)
-	}
 
 }
