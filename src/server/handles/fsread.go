@@ -2,6 +2,7 @@ package handles
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	stdpath "path"
 	"strings"
 	"time"
@@ -282,6 +283,9 @@ func FsGetSplit(c *gin.Context) {
 }
 
 func FsGet(c *gin.Context, req *FsGetReq, user *model.User) {
+
+	log.Infof("[ACCESS]Client=[%v] FsGet RequestPath=[%v]", c.ClientIP(), req.Path)
+
 	reqPath, err := user.JoinPath(req.Path)
 	if err != nil {
 		common.ErrorResp(c, err, 403)
