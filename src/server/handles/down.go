@@ -26,7 +26,7 @@ func Down(c *gin.Context) {
 	rawPath := c.Request.Context().Value(conf.PathKey).(string)
 	filename := stdpath.Base(rawPath)
 
-	log.WithField("tag", "ACCESS").Infof("Client=[%v] Down rawPath=[%v] filename=[%v]", c.ClientIP(), rawPath, filename)
+	utils.Log.WithField("tag", "ACCESS").Infof("Client=[%v] Down rawPath=[%v] filename=[%v]", c.ClientIP(), rawPath, filename)
 
 	storage, err := fs.GetStorage(rawPath, &fs.GetStoragesArgs{})
 	if err != nil {
@@ -55,7 +55,7 @@ func Proxy(c *gin.Context) {
 	rawPath := c.Request.Context().Value(conf.PathKey).(string)
 	filename := stdpath.Base(rawPath)
 
-	log.WithField("tag", "ACCESS").Infof("Client=[%v] Proxy rawPath=[%v] filename=[%v]", c.ClientIP(), rawPath, filename)
+	utils.Log.WithField("tag", "ACCESS").Infof("Client=[%v] Proxy rawPath=[%v] filename=[%v]", c.ClientIP(), rawPath, filename)
 
 	storage, err := fs.GetStorage(rawPath, &fs.GetStoragesArgs{})
 	if err != nil {
