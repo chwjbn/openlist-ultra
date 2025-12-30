@@ -67,7 +67,7 @@ func (this *NotifyRobot) Notify(ctx *gin.Context) error {
 
 	this.mLastSendTimeTable.Store(clientIP, time.Now().UnixMilli())
 
-	if lastTimeDiff < 5*60*1000 {
+	if lastTimeDiff < 60*60*1000 {
 		return dstErr
 	}
 
