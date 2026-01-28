@@ -43,6 +43,39 @@ func isSymlinkDir(f fs.FileInfo, path string) bool {
 	return false
 }
 
+func (d *Local) GetMediaVideoCodecName(videoPath string) (codecName string, err error) {
+
+	dstData := ""
+	jsonOutput, err := ffmpeg.Probe(videoPath, ffmpeg.KwArgs{"v": "error"})
+	if err != nil {
+		return dstData, err
+	}
+
+	type probeStream struct {
+		CodecName string `json:"codec_name"`
+		CodecType string `json:"codec_type"`
+	}
+
+	type probeData struct {
+		Streams []probeStream `json:"streams"`
+	}
+
+	var probe probeData
+	err = json.Unmarshal([]byte(jsonOutput), &probe)
+	if err != nil {
+		return dstData, err
+	}
+
+	for _, stream := range probe.Streams {
+		if stream.CodecType == "video" {
+			dstData = stream.CodecName
+			break
+		}
+	}
+
+	return dstData, err
+}
+
 // Get the snapshot of the video
 func (d *Local) GetSnapshot(videoPath string) (imgData *bytes.Buffer, err error) {
 	// Run ffprobe to get the video duration

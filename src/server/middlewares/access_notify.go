@@ -73,7 +73,7 @@ func (this *NotifyRobot) Notify(ctx *gin.Context) error {
 
 	msgTime := time.Now().Format("2006-01-02 15:04:05")
 
-	msgData2Feishu := fmt.Sprintf("【通知】[%v]IP地址=[%v]触发了[OpenList]访问<at user_id=\"all\">所有人</at>", msgTime, clientIP)
+	msgData2Feishu := fmt.Sprintf("【通知】[%v]IP地址=[%v]触发了[OpenList]访问", msgTime, clientIP)
 
 	dstErr = webhook.WebHookToFeishu(msgData2Feishu)
 

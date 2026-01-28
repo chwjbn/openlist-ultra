@@ -230,10 +230,33 @@ func (d *Local) Get(ctx context.Context, path string) (model.Obj, error) {
 	if !isFolder {
 		fType := utils.GetFileType(f.Name())
 		if fType == conf.VIDEO {
-			jellyfinClient := jellyfin.NewClient()
-			if jellyfinClient.IsHosted() {
-				xId = jellyfinClient.GetMediaStreamUrl(rawPath)
+
+			ext := strings.ToLower(utils.Ext(f.Name()))
+
+			isVideoNeedDecode := true
+
+			if strings.HasSuffix(ext, "mp4") {
+
+				var videoCodecName string
+				videoCodecName, _ = d.GetMediaVideoCodecName(path)
+
+				log.Infof("video file: [%s], codec: [%s]", path, videoCodecName)
+
+				if strings.EqualFold(videoCodecName, "h264") {
+					isVideoNeedDecode = false
+				}
+
 			}
+
+			if isVideoNeedDecode {
+
+				jellyfinClient := jellyfin.NewClient()
+
+				if jellyfinClient.IsHosted() {
+					xId = jellyfinClient.GetMediaStreamUrl(rawPath)
+				}
+			}
+
 		}
 	}
 
